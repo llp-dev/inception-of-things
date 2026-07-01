@@ -1,16 +1,42 @@
-LOGIN = "lepereir"
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# ---------------------------------------------------------------------------
+# Configuration constants
+# ---------------------------------------------------------------------------
+BOX    = "generic/alpine319"
+MEMORY = 2048
+CPUS   = 2
+
+LOGIN     = "lepereir"
+SERVER    = "#{LOGIN}S"      # single K3s server node (3 apps + ingress)
+SERVER_IP = "192.168.56.110"
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/alpine320"
+  # Base box.
+  config.vm.box = BOX
   config.vm.box_check_update = false
 
-  config.vm.define "#{LOGIN}S" do |server|
-    server.vm.hostname = "#{LOGIN}S"
-    server.vm.network "private_network", ip: "192.168.56.110"
-    server.vm.provider "libvirt" do |v|
-      v.memory = 1024
-      v.cpus = 1
+  # Shared setup run on every node (prerequisites + kubectl alias).
+  # Global provisioners run before the per-machine ones below.
+  config.vm.provision "shell", path: "scripts/common.sh"
+
+  # -------------------------------------------------------------------------
+  # Server node: K3s + three web apps behind a Traefik ingress
+  # -------------------------------------------------------------------------
+  config.vm.define SERVER do |server|
+    server.vm.hostname = SERVER
+    server.vm.network "private_network", ip: SERVER_IP
+
+    server.vm.provider "virtualbox" do |vb|
+      vb.name   = SERVER
+      vb.memory = MEMORY
+      vb.cpus   = CPUS
+      # Faster CPU scheduling for Linux guests.
+      vb.customize ["modifyvm", :id, "--paravirtprovider", "kvm"]
     end
-    server.vm.provision "shell", path: "scripts/setup.sh"
+
+    # Install K3s (server) and deploy the apps + ingress.
+    server.vm.provision "shell", path: "scripts/server.sh"
   end
 end
