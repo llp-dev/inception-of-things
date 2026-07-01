@@ -5,7 +5,7 @@ set -e
 
 curl -sfL https://get.k3s.io | \
   K3S_TOKEN="inception42" \
-  INSTALL_K3S_EXEC="server --flannel-iface eth1 --node-ip 192.168.56.110" \
+  INSTALL_K3S_EXEC="server --write-kubeconfig-mode 644 --flannel-iface eth1 --node-ip 192.168.56.110" \
   sh -
 
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
