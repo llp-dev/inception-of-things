@@ -1,10 +1,7 @@
 #!/bin/sh
 set -e
 
-apk add --no-cache curl bash iptables ip6tables
-
-rc-update add cgroups boot
-rc-service cgroups start 2>/dev/null || true
+# Prerequisites and the kubectl alias are installed by scripts/common.sh.
 
 until curl -sfk https://192.168.56.110:6443/ping >/dev/null 2>&1; do
   sleep 5

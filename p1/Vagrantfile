@@ -1,26 +1,65 @@
-LOGIN = "lepereir"
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# ---------------------------------------------------------------------------
+# Configuration constants
+# ---------------------------------------------------------------------------
+BOX    = "generic/alpine319"
+MEMORY = 2048
+CPUS   = 2
+
+LOGIN     = "lepereir"
+MASTER    = "#{LOGIN}S"      # K3s server node
+WORKER    = "#{LOGIN}SW"     # K3s agent node
+MASTER_IP = "192.168.56.110"
+IP_WORKER = "192.168.56.111"
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/alpine320"
+  # Base box shared by both machines.
+  config.vm.box = BOX
   config.vm.box_check_update = false
 
-  config.vm.define "#{LOGIN}S" do |server|
-    server.vm.hostname = "#{LOGIN}S"
-    server.vm.network "private_network", ip: "192.168.56.110"
-    server.vm.provider "libvirt" do |v|
-      v.memory = 512
-      v.cpus = 1
+  # Shared setup run on every node (prerequisites + kubectl alias).
+  # Global provisioners run before the per-machine ones below.
+  config.vm.provision "shell", path: "scripts/common.sh"
+
+  # -------------------------------------------------------------------------
+  # Master / K3s server node
+  # -------------------------------------------------------------------------
+  config.vm.define MASTER do |master|
+    master.vm.hostname = MASTER
+    master.vm.network "private_network", ip: MASTER_IP
+
+    # VirtualBox settings for the master.
+    master.vm.provider "virtualbox" do |vb|
+      vb.name   = MASTER
+      vb.memory = MEMORY
+      vb.cpus   = CPUS
+      # Faster CPU scheduling for Linux guests.
+      vb.customize ["modifyvm", :id, "--paravirtprovider", "kvm"]
     end
-    server.vm.provision "shell", path: "scripts/server.sh"
+
+    # Install and start K3s in server mode.
+    master.vm.provision "shell", path: "scripts/server.sh"
   end
 
-  config.vm.define "#{LOGIN}SW" do |worker|
-    worker.vm.hostname = "#{LOGIN}SW"
-    worker.vm.network "private_network", ip: "192.168.56.111"
-    worker.vm.provider "libvirt" do |v|
-      v.memory = 512
-      v.cpus = 1
+  # -------------------------------------------------------------------------
+  # Worker / K3s agent node
+  # -------------------------------------------------------------------------
+  config.vm.define WORKER do |worker|
+    worker.vm.hostname = WORKER
+    worker.vm.network "private_network", ip: IP_WORKER
+
+    # VirtualBox settings for the worker.
+    worker.vm.provider "virtualbox" do |vb|
+      vb.name   = WORKER
+      vb.memory = MEMORY
+      vb.cpus   = CPUS
+      # Faster CPU scheduling for Linux guests.
+      vb.customize ["modifyvm", :id, "--paravirtprovider", "kvm"]
     end
-    worker.vm.provision "shell", path: "scripts/worker.sh"
+
+    # Install and start K3s in agent mode (joins the master).
+    worker.vm.provision "shell", path: "scripts/server-worker.sh"
   end
 end
