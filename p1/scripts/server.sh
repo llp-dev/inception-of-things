@@ -12,8 +12,3 @@ export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 until kubectl get nodes 2>/dev/null | grep -q "Ready"; do
   sleep 2
 done
-
-mkdir -p /home/vagrant/.kube
-cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
-chown -R vagrant:vagrant /home/vagrant/.kube
-chmod 600 /home/vagrant/.kube/config

@@ -12,10 +12,5 @@ until kubectl get nodes 2>/dev/null | grep -q "Ready"; do
   sleep 2
 done
 
-# Deploy the three apps and the ingress (project dir is synced to /vagrant).
-kubectl apply -f /vagrant/confs/
-
-mkdir -p /home/vagrant/.kube
-cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
-chown -R vagrant:vagrant /home/vagrant/.kube
-chmod 600 /home/vagrant/.kube/config
+# Deploy the three apps and the ingress (confs synced to /vagrant_shared).
+kubectl apply -f /vagrant_shared/

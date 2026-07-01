@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# Common setup run on every node (server and worker).
+# Common setup run on every node (prerequisites + kubectl alias).
 apk add --no-cache curl bash iptables ip6tables
 
 rc-update add cgroups boot

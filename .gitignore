@@ -1,0 +1,5 @@
+# Vagrant local state (per-machine VM ids, synced-folder metadata, etc.)
+.vagrant/
+
+# Log files
+*.log
