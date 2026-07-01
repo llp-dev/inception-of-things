@@ -1,0 +1,26 @@
+LOGIN = "lepereir"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/alpine320"
+  config.vm.box_check_update = false
+
+  config.vm.define "#{LOGIN}S" do |server|
+    server.vm.hostname = "#{LOGIN}S"
+    server.vm.network "private_network", ip: "192.168.56.110"
+    server.vm.provider "libvirt" do |v|
+      v.memory = 512
+      v.cpus = 1
+    end
+    server.vm.provision "shell", path: "scripts/server.sh"
+  end
+
+  config.vm.define "#{LOGIN}SW" do |worker|
+    worker.vm.hostname = "#{LOGIN}SW"
+    worker.vm.network "private_network", ip: "192.168.56.111"
+    worker.vm.provider "libvirt" do |v|
+      v.memory = 512
+      v.cpus = 1
+    end
+    worker.vm.provision "shell", path: "scripts/worker.sh"
+  end
+end
