@@ -5,11 +5,6 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
-  defaultBackend:
-    service:
-      name: app3-svc
-      port:
-        number: 80
   rules:
   - host: app1.com
     http:
@@ -29,5 +24,15 @@ spec:
         backend:
           service:
             name: app2-svc
+            port:
+              number: 80
+  # No host -> default backend: matches any other Host (incl. no host).
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app3-svc
             port:
               number: 80

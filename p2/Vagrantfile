@@ -18,7 +18,7 @@ Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
 
   # Share the manifests into the VM (applied by scripts/server.sh).
-  config.vm.synced_folder "./confs", "/vagrant_shared"
+  config.vm.synced_folder "./confs", "/vagrant_shared", SharedFoldersEnableSymlinksCreate: false
 
   # Shared setup run on every node (prerequisites + kubectl alias).
   # Global provisioners run before the per-machine ones below.
